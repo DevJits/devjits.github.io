@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Holiday Homework Presentation</title>
+  <link rel="icon" type="image/png" href="icon.png">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0a1128 0%, #001f54 50%, #002244 100%);
+      color: #f4f6f9;
+      overflow-x: hidden;
+      scroll-snap-type: y mandatory;
+      height: 100vh;
+    }
+
+    .presentation-container {
+      height: 100vh;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+    }
+
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 70px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 40px;
+      background: rgba(10, 17, 40, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 100;
+    }
+
+    .header-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      background: linear-gradient(45deg, #00b4d8, #90e0ef);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .menu-dots {
+      background: none;
+      border: none;
+      color: #00b4d8;
+      font-size: 2rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 24px;
+      width: 10px;
+      padding: 0;
+      transition: transform 0.3s ease;
+    }
+
+    .menu-dots:hover { transform: scale(1.1); }
+
+    .menu-dots span {
+      display: block;
+      width: 6px;
+      height: 6px;
+      background-color: #00b4d8;
+      border-radius: 50%;
+      margin: auto;
+    }
+
+    .popup-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .popup-overlay.show { display: flex; opacity: 1; }
+
+    .popup-content {
+      background: linear-gradient(135deg, #0f1d3a 0%, #0a1128 100%);
+      border: 2px solid rgba(0, 180, 216, 0.5);
+      border-radius: 16px;
+      padding: 40px;
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      transform: scale(0.7);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .popup-overlay.show .popup-content { transform: scale(1); }
+
+    .popup-title {
+      font-size: 1.8rem;
+      color: #90e0ef;
+      margin-bottom: 25px;
+      border-bottom: 2px solid rgba(0, 180, 216, 0.2);
+      padding-bottom: 10px;
+    }
+
+    .popup-details { font-size: 1.2rem; line-height: 2; color: #f4f6f9; margin-bottom: 30px; }
+    .popup-details strong { color: #00b4d8; }
+
+    .close-btn {
+      background: #00b4d8;
+      color: #0a1128;
+      border: none;
+      padding: 10px 25px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .close-btn:hover { background: #90e0ef; transform: translateY(-2px); }
+
+    .slide {
+      scroll-snap-align: start;
+      min-height: 100vh;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 100px 40px 40px 40px;
+      position: relative;
+    }
+
+    .progress-bar {
+      position: fixed;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 90;
+    }
+
+    .progress-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .progress-dot.active-dot {
+      background: #00b4d8;
+      transform: scale(1.5);
+      box-shadow: 0 0 10px #00b4d8;
+    }
+
+    .image-container {
+      margin-top: 30px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 3px solid rgba(0, 180, 216, 0.3);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      max-width: 80%;
+      max-height: 55vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .image-container img {
+      width: auto; height: auto;
+      max-width: 100%; max-height: 50vh;
+      object-fit: contain; display: block;
+    }
+
+    .double-image-container {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      align-items: center;
+      margin-top: 30px;
+      width: 90%;
+      max-width: 1100px;
+    }
+
+    .double-image-container .image-box {
+      flex: 1;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 3px solid rgba(0, 180, 216, 0.3);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      background: rgba(255, 255, 255, 0.02);
+      max-height: 50vh;
+    }
+
+    .double-image-container img {
+      width: 100%; height: auto;
+      max-height: 48vh;
+      object-fit: contain; display: block;
+    }
+
+    .slide-title {
+      font-size: 3rem;
+      text-align: center;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #ffffff;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .audit-table-wrapper {
+      width: 90%; max-width: 1000px;
+      margin-top: 20px; overflow-x: auto;
+      background: rgba(10, 25, 47, 0.6);
+      border-radius: 12px;
+      border: 1px solid rgba(0, 180, 216, 0.2);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .audit-table { width: 100%; border-collapse: collapse; text-align: left; }
+
+    .audit-table th, .audit-table td {
+      padding: 15px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .audit-table th {
+      background-color: rgba(0, 180, 216, 0.25);
+      color: #90e0ef; font-weight: 600;
+      text-transform: uppercase; font-size: 0.95rem; letter-spacing: 0.5px;
+    }
+
+    .audit-table tr:hover { background-color: rgba(0, 180, 216, 0.05); }
+    .audit-table td { color: #e0e1dd; font-size: 1rem; }
+
+    /* ===== ANIMATION CLASSES (unchanged) ===== */
+    .anim-target {
+      opacity: 0;
+      transform: translateY(50px);
+      transition: all 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .anim-zoom { transform: scale(0.6); opacity: 0; transition: transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 1.2s ease; }
+    .active-anim .anim-zoom { transform: scale(1); opacity: 1; }
+
+    .anim-slide-left { transform: translateX(-150px); opacity: 0; }
+    .active-anim .anim-slide-left { transform: translateX(0); opacity: 1; }
+
+    .anim-slide-right { transform: translateX(150px); opacity: 0; }
+    .active-anim .anim-slide-right { transform: translateX(0); opacity: 1; }
+
+    .anim-flip-up { transform: rotateX(-90deg); transform-origin: top; opacity: 0; transition: transform 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 1.2s ease; }
+    .active-anim .anim-flip-up { transform: rotateX(0deg); opacity: 1; }
+
+    .anim-bounce { transform: scale(0.3); opacity: 0; transition: transform 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.5), opacity 1.2s ease; }
+    .active-anim .anim-bounce { transform: scale(1); opacity: 1; }
+
+    .anim-rotate { transform: rotate(-15deg) scale(0.85); opacity: 0; }
+    .active-anim .anim-rotate { transform: rotate(0deg) scale(1); opacity: 1; }
+
+    .anim-clip { clip-path: circle(0% at 50% 50%); opacity: 0; transition: clip-path 1.4s ease-in-out, opacity 1s ease; }
+    .active-anim .anim-clip { clip-path: circle(100% at 50% 50%); opacity: 1; }
+
+    .anim-slide-up { transform: translateY(120px); opacity: 0; }
+    .active-anim .anim-slide-up { transform: translateY(0); opacity: 1; }
+
+    .anim-blur { filter: blur(20px); opacity: 0; }
+    .active-anim .anim-blur { filter: blur(0px); opacity: 1; }
+
+    .anim-tilt { transform: perspective(1000px) rotateX(25deg) translateY(60px); opacity: 0; }
+    .active-anim .anim-tilt { transform: perspective(1000px) rotateX(0deg) translateY(0); opacity: 1; }
+
+    .anim-diagonal { transform: translate(-100px, -100px); opacity: 0; }
+    .active-anim .anim-diagonal { transform: translate(0, 0); opacity: 1; }
+
+    .anim-elastic { transform: scale(1.4); opacity: 0; transition: transform 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.2), opacity 1.2s ease; }
+    .active-anim .anim-elastic { transform: scale(1); opacity: 1; }
+
+    .anim-spread { transform: scaleX(0.2); opacity: 0; }
+    .active-anim .anim-spread { transform: scaleX(1); opacity: 1; }
+
+    .anim-flip-y { transform: rotateY(90deg); opacity: 0; transition: transform 1.2s cubic-bezier(0.1, 0.8, 0.3, 1), opacity 1.2s ease; }
+    .active-anim .anim-flip-y { transform: rotateY(0deg); opacity: 1; }
+
+    .anim-wave { transform: skewX(-10deg) translateX(100px); opacity: 0; }
+    .active-anim .anim-wave { transform: skewX(0deg) translateX(0); opacity: 1; }
+
+    .anim-glow {
+      box-shadow: 0 0 0px rgba(0, 180, 216, 0);
+      opacity: 0; transform: translateY(30px);
+      transition: box-shadow 1.5s ease, opacity 1s ease, transform 1s ease;
+    }
+    .active-anim .anim-glow {
+      box-shadow: 0 0 30px rgba(0, 180, 216, 0.4);
+      opacity: 1; transform: translateY(0);
+    }
+
+    /* ===== SLIDE 1 — 3D BOX + TAP + WATER ===== */
+    #slide1 {
+      overflow: hidden;
+      perspective: 1200px;
+    }
+
+    /* The 3D scene wrapper — rotates on entry */
+    .box-scene {
+      position: relative;
+      width: 700px;
+      max-width: 90vw;
+      perspective: 1200px;
+    }
+
+    /* Entry rotation animation */
+    @keyframes boxEntrance {
+      0%   { transform: rotateY(-90deg) rotateX(30deg); opacity: 0; }
+      60%  { transform: rotateY(8deg) rotateX(-4deg); opacity: 1; }
+      80%  { transform: rotateY(-4deg) rotateX(2deg); }
+      100% { transform: rotateY(0deg) rotateX(0deg); opacity: 1; }
+    }
+
+    .box-scene.start-anim {
+      animation: boxEntrance 1.4s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+    }
+
+    /* The actual glass box */
+    .glass-box {
+      position: relative;
+      width: 100%;
+      padding: 60px 50px;
+      border: 2px solid rgba(0, 180, 216, 0.55);
+      border-radius: 18px;
+      background: rgba(0, 30, 70, 0.25);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      overflow: hidden;
+      box-shadow:
+        0 0 40px rgba(0, 180, 216, 0.15),
+        inset 0 0 60px rgba(0, 100, 180, 0.08);
+      /* subtle 3D bevel edges */
+      transform-style: preserve-3d;
+    }
+
+    /* Shine/gloss on top-left */
+    .glass-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 60%; height: 2px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.5), transparent);
+      border-radius: 18px 0 0 0;
+    }
+    .glass-box::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 2px; height: 50%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.4), transparent);
+      border-radius: 18px 0 0 0;
+    }
+
+    /* Water fill inside box */
+    .box-water {
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 100%;
+      height: 0%;
+      background: linear-gradient(to top, rgba(0,80,200,0.55), rgba(39,183,255,0.35));
+      border-radius: 0 0 16px 16px;
+      transition: height 0s;
+      z-index: 1;
+    }
+
+    /* Subtle wave on top of water */
+    .box-water::after {
+      content: '';
+      position: absolute;
+      top: -6px; left: -10%;
+      width: 120%; height: 12px;
+      background: radial-gradient(ellipse at 50% 50%, rgba(144,224,239,0.6) 0%, transparent 70%);
+      animation: waveRipple 1.2s ease-in-out infinite alternate;
+    }
+
+    @keyframes waveRipple {
+      0%   { transform: scaleY(1) translateX(0); }
+      100% { transform: scaleY(1.6) translateX(4px); }
+    }
+
+    /* The title text inside the box */
+    .box-title {
+      position: relative;
+      z-index: 5;
+      font-size: 3rem;
+      font-weight: 700;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #90e0ef;
+      text-shadow: 0 2px 20px rgba(0,180,216,0.6);
+      line-height: 1.2;
+    }
+
+    /* ---- TAP on right side top ---- */
+    .tap-wrapper {
+      position: absolute;
+      top: -2px;
+      right: 40px;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Tap body (horizontal pipe section) */
+    .tap-body {
+      width: 48px;
+      height: 14px;
+      background: linear-gradient(180deg, #b0c4d8 0%, #6a8fa8 50%, #4a6f88 100%);
+      border-radius: 7px 7px 0 0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      position: relative;
+    }
+
+    /* Tap neck going down */
+    .tap-neck {
+      width: 10px;
+      height: 20px;
+      background: linear-gradient(90deg, #8aa8bf, #5a7f9a);
+      border-radius: 0 0 5px 5px;
+      margin: 0 auto;
+      box-shadow: inset 1px 0 2px rgba(255,255,255,0.2);
+    }
+
+    /* Tap spout (curves outward) */
+    .tap-spout {
+      width: 28px;
+      height: 12px;
+      border: 4px solid #6a8fa8;
+      border-top: none;
+      border-radius: 0 0 14px 14px;
+      margin: 0 auto;
+      background: transparent;
+    }
+
+    /* Handle on top of tap */
+    .tap-handle {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 32px;
+      height: 9px;
+      background: linear-gradient(180deg, #c8dce8, #7a9db8);
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    /* Water stream from tap */
+    .tap-stream {
+      width: 8px;
+      height: 0px;
+      background: linear-gradient(180deg, rgba(144,224,239,0.9), rgba(0,150,220,0.7));
+      border-radius: 0 0 4px 4px;
+      margin: 0 auto;
+      transition: height 0.3s ease;
+      box-shadow: 0 0 6px rgba(0,180,216,0.5);
+    }
+
+    /* ---- DRAIN HOLE on left side ---- */
+    .drain-wrapper {
+      position: absolute;
+      left: 45px;
+      bottom: -2px;
+      z-index: 20;
+    
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .drain-hole-box {
+      width: 24px;
+      height: 0px;
+    
+      background: linear-gradient(180deg,#001a3a,#0a2a50);
+    
+      border-radius: 4px 4px 0 0;
+    
+      overflow: hidden;
+    
+      transition: height .6s cubic-bezier(.68,-0.55,.27,1.55);
+    
+      box-shadow: inset 0 0 8px rgba(0,0,0,.8);
+    }
+    
+    .drain-hole-box.open{
+      height:22px;
+    }
+
+    /* Water draining out stream */
+    .drain-stream{
+      position:absolute;
+    
+      top:20px;
+      left:50%;
+      transform:translateX(-50%);
+    
+      width:8px;
+      height:0;
+    
+      background:linear-gradient(
+          180deg,
+          rgba(0,150,220,.8),
+          rgba(144,224,239,.4)
+      );
+    
+      border-radius:0 0 4px 4px;
+    
+      transition:height .4s ease;
+    
+      box-shadow:0 0 6px rgba(0,180,216,.4);
+    }
+    
+    .drain-stream.flowing{
+      height:35px;
+    }
+    /* ===== THANK YOU BOUNCING ===== */
+
+    #slide12{
+        overflow:hidden;
+        position:relative;
+    }
+    
+    .thankyou-bounce{
+        position:absolute;
+        left:80px;
+        top:120px;
+    
+        padding:20px 40px;
+        border:3px solid rgba(0,180,216,.6);
+        border-radius:18px;
+    
+        background:rgba(0,35,70,.28);
+        backdrop-filter:blur(8px);
+    
+        box-shadow:
+            0 0 30px rgba(0,180,216,.35),
+            inset 0 0 20px rgba(255,255,255,.05);
+    
+        animation:bounceDVD 10s linear infinite;
+    }
+    
+    @keyframes bounceDVD{
+    
+        0%{
+            left:40px;
+            top:60px;
+        }
+    
+        20%{
+            left:calc(100% - 430px);
+            top:90px;
+        }
+    
+        42%{
+            left:calc(100% - 430px);
+            top:calc(100% - 210px);
+        }
+    
+        63%{
+            left:120px;
+            top:calc(100% - 180px);
+        }
+    
+        82%{
+            left:55%;
+            top:35%;
+        }
+    
+        100%{
+            left:40px;
+            top:60px;
+        }
+    }
+    
+
+  
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-title">Holiday Homework Presentation</div>
+    <button class="menu-dots" onclick="togglePopup()" aria-label="Information Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <div class="popup-overlay" id="infoPopup">
+    <div class="popup-content">
+      <h2 class="popup-title">Project Details</h2>
+      <div class="popup-details">
+        <p><strong>Created By:</strong> Jitarth Satija</p>
+        <p><strong>Class:</strong> VIII Vikrant</p>
+        <p><strong>School:</strong> Blooming Dale School</p>
+      </div>
+      <button class="close-btn" onclick="togglePopup()">Close</button>
+    </div>
+  </div>
+
+  <div class="presentation-container" id="presentationContainer">
+
+    <!-- ===== SLIDE 1: 3D BOX WITH TAP & WATER ===== -->
+    <section class="slide" id="slide1">
+
+      <div class="box-scene" id="boxScene">
+        <!-- TAP on top-right -->
+        <div class="tap-wrapper" id="tapWrapper">
+          <div class="tap-body">
+            <div class="tap-handle"></div>
+          </div>
+          <div class="tap-neck"></div>
+          <div class="tap-spout"></div>
+          <div class="tap-stream" id="tapStream"></div>
+        </div>
+
+        <!-- DRAIN HOLE on left side -->
+        <div class="drain-wrapper">
+          <div class="drain-stream" id="drainStream"></div>
+          <div class="drain-hole-box" id="drainHole"></div>
+        </div>
+
+        <!-- Glass box -->
+        <div class="glass-box">
+          <!-- Water fill layer -->
+          <div class="box-water" id="boxWater"></div>
+          <!-- Title text -->
+          <div class="box-title">Water Conservation<br>&amp; Management</div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Slide 2 -->
+    <section class="slide" id="slide2">
+      <div class="anim-target anim-slide-left" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+        <h1 class="slide-title">Water Audit</h1>
+        <div class="audit-table-wrapper">
+          <table class="audit-table">
+            <thead>
+              <tr>
+                <th>Activity</th>
+                <th>Standard Water Consumed</th>
+                <th>Frequency per Day</th>
+                <th>Total Consumption (Ghar ka Audit)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Brushing Teeth (with running tap)</td><td>12 Liters/Min</td><td>2 Times</td><td>24 Liters</td></tr>
+              <tr><td>Bathing (Shower)</td><td>80 Liters</td><td>1 Time</td><td>80 Liters</td></tr>
+              <tr><td>Toilet Flushing</td><td>9 Liters/Flush</td><td>5 Times</td><td>45 Liters</td></tr>
+              <tr><td>Washing Utensils</td><td>40 Liters</td><td>3 Times</td><td>120 Liters</td></tr>
+              <tr><td>Washing Clothes (Machine)</td><td>100 Liters</td><td>1 Time</td><td>100 Liters</td></tr>
+              <tr><td>Watering Plants</td><td>15 Liters</td><td>1 Time</td><td>15 Liters</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="slide3">
+      <div class="anim-target anim-flip-up" style="width:100%; display:flex; flex-direction:column; align-items:center;">
+        <h1 class="slide-title">Uses of Water</h1>
+        <div class="image-container">
+          <img src="Usage.png" alt="Uses of Water">
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="slide4">
+      <div class="anim-target anim-bounce" style="width:100%; display:flex; flex-direction:column; align-items:center;">
+        <h1 class="slide-title">An Area of Water Wastage</h1>
+        <div class="double-image-container">
+          <div class="image-box"><img src="Wastage.jpg" alt="Water Wastage Diagram/Photo"></div>
+          <div class="image-box"><img src="Jitarth-AI.png" alt="Water Visual/Diagram"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="slide5">
+      <div class="anim-target anim-rotate" style="width:100%; display:flex; flex-direction:column; align-items:center;">
+        <h1 class="slide-title">How Water is Wasted in Households</h1>
+        <div class="image-container">
+          <img src="Wastingclipart.png" alt="How Water is Wasted in Households">
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="slide6">
+      <div class="anim-target anim-clip" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+        <h1 class="slide-title">Why is Water Conservation Necessary</h1>
+        <div class="image-container">
+          <img src="Waterless.jpg" alt="Drying Plants / No Water Impact">
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="slide7">
+      <div class="anim-target anim-slide-up" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+        <h1 class="slide-title">Global Water Crisis</h1>
+        <div class="image-container">
+          <img src="Crisis.png" alt="No Water">
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="slide8">
+      <div class="anim-target anim-glow" style="width:100%;display:flex;flex-direction:column;align-items:center;">
+        <h1 class="slide-title">Ways to Save Water</h1>
+        <div class="double-image-container">
+          <div class="image-box">
+            <h2 style="text-align:center;color:#90e0ef;padding:15px;font-size:1.8rem;">At Home</h2>
+            <img src="AC.png">
+          </div>
+          <div class="image-box">
+            <h2 style="text-align:center;color:#90e0ef;padding:15px;font-size:1.8rem;">In School</h2>
+            <img src="IR.jpg">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="slide9">
+      <div class="anim-target anim-elastic" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+        <h1 class="slide-title">Rainwater Harvesting</h1>
+        <div class="image-container">
+          <img src="Harvest.png" alt="Saving Water in Tanks">
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="slide11">
+      <div class="anim-target anim-wave" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+        <h1 class="slide-title">Our Responsibility Towards Water</h1>
+        <div class="image-container">
+          <img src="Responsibility.png" alt="Our Responsibility">
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="slide12">
+      <div class="anim-target anim-glow thankyou-bounce">
+        <h1 class="slide-title" style="color: #00b4d8;">Thank You!</h1>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="progress-bar" id="progressBar"></div>
+
+  <script>
+    /* ============ POPUP ============ */
+    function togglePopup() {
+      const popup = document.getElementById('infoPopup');
+      if (popup.classList.contains('show')) {
+        popup.classList.remove('show');
+        setTimeout(() => popup.style.display = 'none', 400);
+      } else {
+        popup.style.display = 'flex';
+        setTimeout(() => popup.classList.add('show'), 10);
+      }
+    }
+
+    /* ============ PROGRESS DOTS + INTERSECTION OBSERVER ============ */
+    const slides = document.querySelectorAll('.slide');
+    const progressBar = document.getElementById('progressBar');
+
+    slides.forEach((slide, index) => {
+      const dot = document.createElement('div');
+      dot.className = 'progress-dot';
+      dot.setAttribute('title', `Topic ${index + 1}`);
+      dot.addEventListener('click', () => slide.scrollIntoView({ behavior: 'smooth' }));
+      progressBar.appendChild(dot);
+    });
+
+    const progressDots = document.querySelectorAll('.progress-dot');
+
+    const observerOptions = {
+      root: document.getElementById('presentationContainer'),
+      threshold: 0.45
+    };
+
+    const slideObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const index = Array.from(slides).indexOf(entry.target);
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active-anim');
+          progressDots.forEach((dot, i) => {
+            dot.classList.toggle('active-dot', i === index);
+          });
+          /* Trigger box scene rotate animation when slide1 comes into view */
+          if (entry.target.id === 'slide1') {
+            startSlide1();
+          }
+        } else {
+          entry.target.classList.remove('active-anim');
+          /* Reset box when scrolled away */
+          if (entry.target.id === 'slide1') {
+            resetSlide1();
+          }
+        }
+      });
+    }, observerOptions);
+
+    slides.forEach(slide => slideObserver.observe(slide));
+
+    /* ============ SLIDE 1 — 3D BOX ANIMATION ============ */
+    const boxScene  = document.getElementById('boxScene');
+    const boxWater  = document.getElementById('boxWater');
+    const tapStream = document.getElementById('tapStream');
+    const drainHole = document.getElementById('drainHole');
+    const drainStream = document.getElementById('drainStream');
+
+    let waterCycleTimer = null;
+    let slide1Active = false;
+
+    function resetSlide1() {
+      slide1Active = false;
+      clearTimeout(waterCycleTimer);
+      boxScene.classList.remove('start-anim');
+      boxWater.style.transition = 'none';
+      boxWater.style.height = '0%';
+      tapStream.style.height = '0px';
+      drainHole.classList.remove('open');
+      drainStream.classList.remove('flowing');
+    }
+
+    function startSlide1() {
+      if (slide1Active) return;
+      slide1Active = true;
+
+      /* Step 1: Box rotates in */
+      boxScene.classList.remove('start-anim');
+      void boxScene.offsetWidth; /* force reflow to restart animation */
+      boxScene.classList.add('start-anim');
+
+      /* Step 2: After box settles (~1.4s), start water cycle */
+      waterCycleTimer = setTimeout(() => {
+        if (slide1Active) runWaterCycle();
+      }, 1500);
+    }
+
+    /*
+      Cycle:
+      - TAP opens → stream appears → box fills over 2s
+      - 1s pause (tap closed, water stays full)
+      - Drain hole opens (left side) after 1s
+      - Box drains over 2s
+      - Drain closes
+      - 0.5s pause → repeat
+    */
+    function runWaterCycle() {
+      if (!slide1Active) return;
+
+      /* --- FILL PHASE --- */
+      /* Open tap stream */
+      tapStream.style.transition = 'height 0.3s ease';
+      tapStream.style.height = '160px';
+
+      /* Fill box over 2s */
+      boxWater.style.transition = 'height 2s linear';
+      boxWater.style.height = '100%';
+
+      /* After 2s fill done → 1s break (tap closes) */
+      waterCycleTimer = setTimeout(() => {
+        if (!slide1Active) return;
+        tapStream.style.height = '0px';   /* close tap */
+
+        /* 1s break, then open drain */
+        waterCycleTimer = setTimeout(() => {
+          if (!slide1Active) return;
+
+          /* --- DRAIN PHASE --- */
+          /* Open drain hole */
+          drainHole.classList.add('open');
+          drainStream.classList.add('flowing');
+
+          /* Drain box over 2s */
+          boxWater.style.transition = 'height 2s linear';
+          boxWater.style.height = '0%';
+
+          /* After 2s drain done → close drain */
+          waterCycleTimer = setTimeout(() => {
+            if (!slide1Active) return;
+            drainHole.classList.remove('open');
+            drainStream.classList.remove('flowing');
+
+            /* 0.5s pause then repeat */
+            waterCycleTimer = setTimeout(() => {
+              if (slide1Active) runWaterCycle();
+            }, 500);
+
+          }, 2000); /* drain duration */
+
+        }, 1000); /* break after fill */
+
+      }, 2000); /* fill duration */
+    }
+
+  </script>
+</body>
+</html>
