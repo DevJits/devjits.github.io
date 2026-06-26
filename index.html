@@ -26,6 +26,9 @@
       overflow-y: scroll;
       scroll-snap-type: y mandatory;
       scroll-behavior: smooth;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .5s ease;
     }
 
     .header {
@@ -158,6 +161,9 @@
       flex-direction: column;
       gap: 12px;
       z-index: 90;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .5s ease;
     }
 
     .progress-dot {
@@ -783,14 +789,32 @@
     /* ============ POPUP ============ */
     function togglePopup() {
       const popup = document.getElementById('infoPopup');
+      const presentation = document.getElementById('presentationContainer');
+      const progressBar = document.getElementById('progressBar');
       if (popup.classList.contains('show')) {
         popup.classList.remove('show');
         setTimeout(() => popup.style.display = 'none', 400);
       } else {
         popup.style.display = 'flex';
-        setTimeout(() => popup.classList.add('show'), 10);
+        presentation.style.opacity = "0";
+        presentation.style.pointerEvents = "none";
+        
+        progressBar.style.opacity = "0";
+        progressBar.style.pointerEvents = "none";
+        setTimeout(() => {
+
+          popup.style.display = 'none';
+      
+          presentation.style.opacity = "1";
+          presentation.style.pointerEvents = "auto";
+      
+          progressBar.style.opacity = "1";
+          progressBar.style.pointerEvents = "auto";
+      
+      }, 400);
       }
     }
+    
 
     /* ============ PROGRESS DOTS + INTERSECTION OBSERVER ============ */
     const slides = document.querySelectorAll('.slide');
@@ -927,6 +951,9 @@
 
       }, 2000); /* fill duration */
     }
+    window.addEventListener('load', () => {
+      togglePopup();
+  });
 
   </script>
 </body>
