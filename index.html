@@ -305,17 +305,14 @@
     color:var(--white);
   }
   #thanksWrap span{
+    position:absolute;
+    left:50%;
+    top:50%;
     display:inline-block;
+    color:white;
     text-shadow:0 0 18px rgba(79,195,247,.6);
-    animation-name:thanksLoop;
-    animation-timing-function:ease-in-out;
-    animation-iteration-count:infinite;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    will-change: transform;
-  }
+    will-change:transform;
+}
   @keyframes thanksLoop{
     0%   {transform:translate(0,0) rotate(0deg) scale(1); opacity:1;}
     18%  {transform:translate(var(--dx), var(--dy)) rotate(var(--r1)) scale(0.7); opacity:.75;}
@@ -476,79 +473,92 @@
     teamCards.appendChild(card);
   });
 
- var thanksWrap = document.getElementById('thanksWrap');
-var text = "Thank You";
+  /* ---------- Thank you letters ---------- */
+  /* ---------- Thank You Continuous Scatter Animation ---------- */
 
-text.split('').forEach(function(ch){
-    var span = document.createElement('span');
-    span.textContent = ch === " " ? "\u00A0" : ch;
-    span.style.position = "absolute";
-    span.style.transition = "all 1.8s ease-in-out";
-    thanksWrap.appendChild(span);
-});
-
-var letters = thanksWrap.querySelectorAll("span");
-
-function animateThanks(){
-
-    // Final positions (THANK YOU)
-    var startX = -((text.length-1) * 18);
-
-    letters.forEach(function(letter,i){
-
-        // Scatter position
-        var x = (Math.random()*700)-350;
-        var y = (Math.random()*400)-200;
-        var r = (Math.random()*720)-360;
-
-        letter.style.transition = "none";
-        letter.style.transform =
-            `translate(${x}px,${y}px) rotate(${r}deg) scale(0.3)`;
-
-    });
-
-    // Wait a little
-    setTimeout(function(){
-
-        letters.forEach(function(letter,i){
-
-            var tx = startX + i*36;
-
-            letter.style.transition =
-                "all 1.8s cubic-bezier(.22,1,.36,1)";
-
-            letter.style.transform =
-                `translate(${tx}px,0px) rotate(0deg) scale(1)`;
-
-        });
-
-    },300);
-
-    // Stay for 1 second then scatter again
-    setTimeout(function(){
-
-        letters.forEach(function(letter){
-
-            var x = (Math.random()*700)-350;
-            var y = (Math.random()*400)-200;
-            var r = (Math.random()*720)-360;
-
-            letter.style.transition =
-                "all 1.8s cubic-bezier(.22,1,.36,1)";
-
-            letter.style.transform =
-                `translate(${x}px,${y}px) rotate(${r}deg) scale(0.3)`;
-
-        });
-
-    },3500);
-
-}
-
-animateThanks();
-setInterval(animateThanks,7000);
-
-
+  var thanksWrap = document.getElementById('thanksWrap');
+  var text = "Thank You";
+  
+  text.split('').forEach(function(ch){
+      var span = document.createElement('span');
+      span.textContent = ch === " " ? "\u00A0" : ch;
+      span.style.position = "absolute";
+      span.style.left = "50%";
+      span.style.top = "50%";
+      span.style.transition = "all .7s ease-in-out";
+      thanksWrap.appendChild(span);
+  });
+  
+  var letters = thanksWrap.querySelectorAll("span");
+  var startX = -((text.length-1) * 18);
+  
+  function scatter(){
+  
+      letters.forEach(function(letter){
+  
+          var x = (Math.random()*700)-350;
+          var y = (Math.random()*400)-200;
+          var r = (Math.random()*720)-360;
+  
+          letter.style.transition = "all .7s ease-in-out";
+          letter.style.transform =
+          `translate(${x}px,${y}px) rotate(${r}deg) scale(.45)`;
+  
+      });
+  
+  }
+  
+  function assemble(){
+  
+      letters.forEach(function(letter,i){
+  
+          var tx = startX + i*36;
+  
+          letter.style.transition = "all .7s cubic-bezier(.22,1,.36,1)";
+          letter.style.transform =
+          `translate(${tx}px,0px) rotate(0deg) scale(1)`;
+  
+      });
+  
+  }
+  
+  function loop(){
+  
+      scatter();
+  
+      setTimeout(function(){
+  
+          assemble();
+  
+          // THANK YOU banne ke baad bhi continuously move karta rahe
+          var t = setInterval(function(){
+  
+              letters.forEach(function(letter,i){
+  
+                  var tx = startX + i*36;
+  
+                  letter.style.transform =
+                  `translate(${tx + (Math.random()*24-12)}px,
+                             ${(Math.random()*24-12)}px)
+                   rotate(${Math.random()*20-10}deg)
+                   scale(1)`;
+  
+              });
+  
+          },120);
+  
+          // 1 second baad fir scatter
+          setTimeout(function(){
+              clearInterval(t);
+              scatter();
+          },1000);
+  
+      },500);
+  
+  }
+  
+  loop();
+  setInterval(loop,2500);
   /* ---------- Team card reveal on scroll (view B) ---------- */
   var teamScroll = document.getElementById('teamScroll');
   var teamObserver = new IntersectionObserver(function(entries){
