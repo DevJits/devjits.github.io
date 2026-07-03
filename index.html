@@ -310,6 +310,11 @@
     animation-name:thanksLoop;
     animation-timing-function:ease-in-out;
     animation-iteration-count:infinite;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    will-change: transform;
   }
   @keyframes thanksLoop{
     0%   {transform:translate(0,0) rotate(0deg) scale(1); opacity:1;}
@@ -471,28 +476,78 @@
     teamCards.appendChild(card);
   });
 
-  /* ---------- Thank you letters ---------- */
-  var thanksWrap = document.getElementById('thanksWrap');
-  var thankText = "Thank You";
-  thankText.split('').forEach(function(ch, i){
+ var thanksWrap = document.getElementById('thanksWrap');
+var text = "Thank You";
+
+text.split('').forEach(function(ch){
     var span = document.createElement('span');
-    span.textContent = (ch === ' ') ? '\u00A0' : ch;
-    var dx = (Math.random()*220 - 110).toFixed(0) + 'px';
-    var dy = (Math.random()*180 - 90).toFixed(0) + 'px';
-    var r1 = (Math.random()*260 - 130).toFixed(0) + 'deg';
-    var r2 = (parseFloat(r1) + (Math.random()*200-100)).toFixed(0) + 'deg';
-    var r3 = (parseFloat(r2) + (Math.random()*200-100)).toFixed(0) + 'deg';
-    var r4 = (720 + Math.random()*360).toFixed(0) + 'deg';
-    span.style.setProperty('--dx', dx);
-    span.style.setProperty('--dy', dy);
-    span.style.setProperty('--r1', r1);
-    span.style.setProperty('--r2', r2);
-    span.style.setProperty('--r3', r3);
-    span.style.setProperty('--r4', r4);
-    span.style.animationDuration = (3.4 + Math.random()*1.6) + 's';
-    span.style.animationDelay = (i*0.06) + 's';
+    span.textContent = ch === " " ? "\u00A0" : ch;
+    span.style.position = "absolute";
+    span.style.transition = "all 1.8s ease-in-out";
     thanksWrap.appendChild(span);
-  });
+});
+
+var letters = thanksWrap.querySelectorAll("span");
+
+function animateThanks(){
+
+    // Final positions (THANK YOU)
+    var startX = -((text.length-1) * 18);
+
+    letters.forEach(function(letter,i){
+
+        // Scatter position
+        var x = (Math.random()*700)-350;
+        var y = (Math.random()*400)-200;
+        var r = (Math.random()*720)-360;
+
+        letter.style.transition = "none";
+        letter.style.transform =
+            `translate(${x}px,${y}px) rotate(${r}deg) scale(0.3)`;
+
+    });
+
+    // Wait a little
+    setTimeout(function(){
+
+        letters.forEach(function(letter,i){
+
+            var tx = startX + i*36;
+
+            letter.style.transition =
+                "all 1.8s cubic-bezier(.22,1,.36,1)";
+
+            letter.style.transform =
+                `translate(${tx}px,0px) rotate(0deg) scale(1)`;
+
+        });
+
+    },300);
+
+    // Stay for 1 second then scatter again
+    setTimeout(function(){
+
+        letters.forEach(function(letter){
+
+            var x = (Math.random()*700)-350;
+            var y = (Math.random()*400)-200;
+            var r = (Math.random()*720)-360;
+
+            letter.style.transition =
+                "all 1.8s cubic-bezier(.22,1,.36,1)";
+
+            letter.style.transform =
+                `translate(${x}px,${y}px) rotate(${r}deg) scale(0.3)`;
+
+        });
+
+    },3500);
+
+}
+
+animateThanks();
+setInterval(animateThanks,7000);
+
 
   /* ---------- Team card reveal on scroll (view B) ---------- */
   var teamScroll = document.getElementById('teamScroll');
