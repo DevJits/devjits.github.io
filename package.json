@@ -3,18 +3,31 @@
   "version": "1.0.0",
   "main": "main.js",
   "scripts": {
-    "build": "electron-builder --win"
+    "build": "electron-builder --win",
+    "android": "npx cap sync android"
   },
   "devDependencies": {
     "electron": "^31.0.0",
     "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/cli": "^6.0.0"
   },
   "build": {
     "appId": "com.lunar.escape",
     "productName": "LunarEscape",
     "files": ["main.js", "app/**/*"],
     "win": {
-      "target": "portable"
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Lunar Escape"
     }
   }
 }
