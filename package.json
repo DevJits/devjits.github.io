@@ -17,7 +17,7 @@
   },
   "build": {
     "appId": "com.lunar.escape",
-    "productName": "LunarEscape",
+    "productName": "Lunar Escape",
     "files": ["main.js", "app/**/*"],
     "win": {
       "target": "nsis"
